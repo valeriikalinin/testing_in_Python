@@ -1,0 +1,37 @@
+import unittest
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
+
+class Search(unittest.TestCase):
+    def setUp(self):
+        self.driver = webdriver.Chrome()  # открываем браузер Хром
+        self.driver.get('https://yandex.ru/')  # открываем поисковик Яндекс
+
+    def test_search(self):
+        driver = self.driver;
+        el = driver.find_element_by_id("text")  # находим поле ввода
+        el.send_keys('selenide')  # в поле ввода вводим указанное значение
+        el.send_keys(Keys.ENTER)  # нажали ентер для поиска
+        time.sleep(3)
+        assert 'No results found' not in self.driver.page_source  # проверяем что у нас поиск без ошибок и есть результ поиска
+        assert driver.find_element_by_link_text("ru.selenide.org"), "Ошибка поиска. Не нашли искомый результат"  # Проверяем есть ли наименование указанное в значении
+        driver.find_element_by_xpath('/html/body/div[2]/nav/ul/li[2]').click()  # кликаем на вкладку Картинки
+        time.sleep(3)
+        tabs = driver.window_handles
+        driver.switch_to.window(tabs[1])  # сказали селениуму что надо работать на вкладке Картинки
+        imageList = driver.find_elements_by_xpath('//div[@class="serp-item__preview"]/a[@href[contains(., "selenide")]]') # Получили список картинок которые содержат слово selenide
+        assert imageList.__len__() > 0, "Не найдены картинки со словом selenide" # Проверяем, что полученный список со словом selenide не пустой и действительно содержит картинки со словом selenide
+        time.sleep(3)
+        self.driver.find_element_by_xpath('//*[@id="tabs-navigation-placeholder"]/div/a[1]').click()  # кликаем на вкладку Поиск
+        tabs = self.driver.window_handles
+        self.driver.switch_to.window(tabs[2])  # сказали селениуму, что работаем на вкладке Поиск
+        time.sleep(3)
+        assert 'No results found' not in self.driver.page_source  # проверяем что у нас поиск без ошибок и есть результ поиска
+        assert self.driver.find_element_by_link_text("ru.selenide.org"), "Ошибка поиска. Не нашли искомый результат2"  # Проверяем есть ли наименование указанное в значении
+
+    def tearDown(self):
+        self.driver.quit() #закрываем все открытые окна, завершаем работу браузера и сервисов, и освобождаем все ресурсы
+
+if __name__ == '__main__':
+    unittest.main()
